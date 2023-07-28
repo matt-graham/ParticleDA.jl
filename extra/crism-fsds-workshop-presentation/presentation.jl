@@ -30,6 +30,7 @@ begin
 	using Plots.PlotMeasures
 	using Kroki
 	using PlutoLinks: @ingredients
+	using HypertextLiteral
 end
 
 # ╔═╡ aae05a0a-4744-47d1-819d-6f1c5bcff6b5
@@ -551,6 +552,11 @@ function set_plot_style(selected_theme)
 	)
 end
 
+# ╔═╡ decb2b80-93ee-4d63-8bc4-2f83384383a4
+function fields_to_state_vector(group)
+	vcat((vec(read(group, key)) for key in ("height", "vx", "vy"))...)
+end
+
 # ╔═╡ 15652fdd-df05-4bf1-ae37-fae0aa518847
 const simulation_seed = 20230718;
 
@@ -769,7 +775,7 @@ const llw2d_model, llw2d_state_sequence, llw2d_observation_sequence = let
 		ParticleDA.get_observation_dimension(model)
 	)
 	ParticleDA.sample_initial_state!(view(states, 1, :), model, rng)
-	for t in 1:lorenz_max_time_step
+	for t in 1:llw2d_max_time_step
 		states[t + 1, :] .= view(states, t, :)
 		state, observation = view(states, t + 1, :), view(observations, t, :)
 		ParticleDA.update_state_deterministic!(state, model, t)
@@ -833,13 +839,8 @@ let
 	plot_llw2d_state_fields(state)
 end
 
-# ╔═╡ decb2b80-93ee-4d63-8bc4-2f83384383a4
-function fields_to_state_vector(group)
-	vcat((vec(read(group, key)) for key in ("height", "vx", "vy"))...)
-end
-
 # ╔═╡ beded2b9-314e-431a-bef5-7bae94d3bcba
-llw2d_state_mean_sequence, llw2d_state_var_sequence, llw2d_weight_sequence = begin
+llw2d_state_mean_sequence, llw2d_state_var_sequence, llw2d_weight_sequence = let
 	output_filename = tempname()
 	rng = Random.TaskLocalRNG()
 	Random.seed!(rng, filtering_seed)
@@ -883,10 +884,10 @@ llw2d_state_mean_sequence, llw2d_state_var_sequence, llw2d_weight_sequence = beg
 		end
 	end
 	state_mean_seq, state_var_seq, weights_seq
-end;
+end
 
 # ╔═╡ 2d987546-e11a-4d01-9eaf-811c7f41fa79
-begin
+let
 	set_plot_style(selected_theme)
 	plot_llw2d_state_fields(
 		view(llw2d_state_mean_sequence, llwd_filtering_time_step + 1, :);
@@ -936,7 +937,6 @@ end
 # ╟─2f8496ff-69ed-4455-9775-3fbeba384a1c
 # ╟─74d5fbbf-b092-4ca0-a420-6601c0319fa9
 # ╟─8a2644ce-b3a1-4efc-91ed-0d62047358a3
-# ╟─0c2b2d50-036d-4e7b-8c48-b6637667c91c
 # ╟─cc348082-6f8f-4e32-be24-cf4f92a454a7
 # ╟─85e996e6-5f42-43f5-a26d-764c4e20b691
 # ╟─2d987546-e11a-4d01-9eaf-811c7f41fa79
@@ -953,12 +953,13 @@ end
 # ╠═11ef29c6-5b43-412b-ad57-9cf25f72405f
 # ╠═b001bd63-6bb9-4f35-a062-c6cdb7956a43
 # ╠═aa12dc4e-4dd0-4963-88c0-3cd01b279f70
+# ╠═decb2b80-93ee-4d63-8bc4-2f83384383a4
+# ╠═f0bfaed4-a194-41a0-b74c-c1302033b9f3
 # ╠═15652fdd-df05-4bf1-ae37-fae0aa518847
 # ╠═66d63209-2bb5-4fbe-98d2-3eefb12cb15b
 # ╠═f047eb91-9438-4963-b742-a7bf9bb58f34
 # ╠═6c419d08-7db9-4f2f-8f17-745be650cad1
 # ╠═5191447c-33d5-41d7-88f7-6f4267d5a804
 # ╠═82c61d87-5601-41e1-b214-053ca0dc301c
-# ╠═f0bfaed4-a194-41a0-b74c-c1302033b9f3
-# ╠═decb2b80-93ee-4d63-8bc4-2f83384383a4
+# ╠═0c2b2d50-036d-4e7b-8c48-b6637667c91c
 # ╠═beded2b9-314e-431a-bef5-7bae94d3bcba
